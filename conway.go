@@ -146,7 +146,7 @@ var (
 func main() {
 	flag.IntVar(&width, "width", 10, "universe width")
 	flag.IntVar(&height, "height", 10, "universe height")
-	flag.IntVar(&refresh, "refresh", 1, "game refresh rate in seconds)")
+	flag.IntVar(&refresh, "refresh", 1, "game refresh rate (in seconds)")
 	flag.IntVar(&totalSteps, "steps", 1000, "how many steps the game run")
 	flag.IntVar(&lifeProbability, "lifeProbability", 25, "initial probability for life")
 	flag.StringVar(&lifeIcon, "lifeIcon", "💜", "life icon")
