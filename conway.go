@@ -143,7 +143,7 @@ var (
 	universes                                           []Universe
 )
 
-func init() {
+func main() {
 	flag.IntVar(&width, "width", 10, "universe width")
 	flag.IntVar(&height, "height", 10, "universe height")
 	flag.IntVar(&refresh, "refresh", 1, "game refresh rate in seconds)")
@@ -154,9 +154,6 @@ func init() {
 	flag.Parse()
 	seed = time.Now().UnixNano()
 	screen = Screen{lifeIcon, deathIcon, time.Duration(refresh) * time.Second}
-}
-
-func main() {
 
 	universe := genesis(width, height)
 	universe = universe.seed(seed, lifeProbability)
