@@ -17,11 +17,11 @@ type Screen struct {
 	refreshRate time.Duration
 }
 
-func (screen Screen) show(universe Universe) {
+func (screen Screen) Show(universe Universe) {
 	cmd := exec.Command("cmd", "/c", "cls")
 	cmd.Stdout = os.Stdout
 	_ = cmd.Run()
-	text := universe.getUniverseAsText(screen.lifeIcon, screen.deathIcon)
+	text := universe.GetUniverseAsText(screen.lifeIcon, screen.deathIcon)
 	fmt.Print(text)
 	time.Sleep(screen.refreshRate)
 }
@@ -35,7 +35,7 @@ func (universe Universe) clone() Universe {
 	return clone
 }
 
-func genesis(width, height int) Universe {
+func NewUniverse(width, height int) Universe {
 	universe := make([][]bool, height)
 	for i := range universe {
 		universe[i] = make([]bool, width)
@@ -43,27 +43,28 @@ func genesis(width, height int) Universe {
 	return universe
 }
 
-func getRowAsText(row []bool, lifeIcon, deathIcon string) string {
-	text := ""
-	for _, cell := range row {
-		if cell {
-			text += lifeIcon
-		} else {
-			text += deathIcon
-		}
-	}
-	return text + "\n"
-}
+func (universe Universe) GetUniverseAsText(lifeIcon, deathIcon string) string {
 
-func (universe Universe) getUniverseAsText(lifeIcon, deathIcon string) string {
+	getRowAsText := func(row []bool) string {
+		text := ""
+		for _, cell := range row {
+			if cell {
+				text += lifeIcon
+			} else {
+				text += deathIcon
+			}
+		}
+		return text + "\n"
+	}
+
 	text := ""
 	for _, row := range universe {
-		text += getRowAsText(row, lifeIcon, deathIcon)
+		text += getRowAsText(row)
 	}
 	return text
 }
 
-func (universe Universe) seed(seed int64, lifeProbability int) Universe {
+func (universe Universe) Seed(seed int64, lifeProbability int) Universe {
 	universeSeeded := universe.clone()
 	rand.Seed(seed)
 	for row := range universeSeeded {
@@ -81,55 +82,56 @@ func (universe Universe) seed(seed int64, lifeProbability int) Universe {
 
 }
 
-func adjust(index, limit int) int {
-	if index < 0 {
-		index = index + limit
-	} else if index >= limit {
-		index = index % limit
-	}
-	return index
+func (universe Universe) Next() Universe {
 
-}
-
-func (universe Universe) isAlive(x, y int) bool {
-	x = adjust(x, len(universe[0]))
-	y = adjust(y, len(universe))
-	return universe[y][x] == true
-}
-
-func (universe Universe) countNeighbors(x, y int) int {
-	neighbors := 0
-	for xOffset := -1; xOffset <= 1; xOffset++ {
-		for yOffset := -1; yOffset <= 1; yOffset++ {
-			if xOffset == 0 && yOffset == 0 {
-				continue
+	isCellAlive := func(universe Universe, x, y int) bool {
+		adjust := func(index, limit int) int {
+			if index < 0 {
+				index = index + limit
+			} else if index >= limit {
+				index = index % limit
 			}
-			if universe.isAlive(x+xOffset, y+yOffset) {
-				neighbors++
+			return index
+
+		}
+
+		x = adjust(x, len(universe[0]))
+		y = adjust(y, len(universe))
+		return universe[y][x] == true
+	}
+
+	countNeighbors := func(universe Universe, x, y int) int {
+		neighbors := 0
+		for xOffset := -1; xOffset <= 1; xOffset++ {
+			for yOffset := -1; yOffset <= 1; yOffset++ {
+				if xOffset == 0 && yOffset == 0 {
+					continue
+				}
+				if isCellAlive(universe, x+xOffset, y+yOffset) {
+					neighbors++
+				}
 			}
 		}
-	}
-	return neighbors
+		return neighbors
 
-}
-
-func (universe Universe) nextCell(x, y int) bool {
-	neighbors := universe.countNeighbors(x, y)
-	isAlive := universe.isAlive(x, y)
-	if isAlive && (neighbors == 2 || neighbors == 3) {
-		return true
 	}
-	if isAlive == false && neighbors == 3 {
-		return true
-	}
-	return false
-}
 
-func (universe Universe) next() Universe {
+	nextCell := func(universe Universe, x, y int) bool {
+		neighbors := countNeighbors(universe, x, y)
+		isAlive := isCellAlive(universe, x, y)
+		if isAlive && (neighbors == 2 || neighbors == 3) {
+			return true
+		}
+		if isAlive == false && neighbors == 3 {
+			return true
+		}
+		return false
+	}
+
 	nextUniverse := universe.clone()
 	for x, row := range universe {
 		for y := range row {
-			nextUniverse[x][y] = universe.nextCell(x, y)
+			nextUniverse[x][y] = nextCell(universe, x, y)
 		}
 	}
 	return nextUniverse
@@ -155,15 +157,15 @@ func main() {
 	seed = time.Now().UnixNano()
 	screen = Screen{lifeIcon, deathIcon, time.Duration(refresh) * time.Second}
 
-	universe := genesis(width, height)
-	universe = universe.seed(seed, lifeProbability)
+	universe := NewUniverse(width, height)
+	universe = universe.Seed(seed, lifeProbability)
 
 	for step := 0; step < totalSteps; step++ {
 		universes = append(universes, universe)
-		universe = universe.next()
+		universe = universe.Next()
 	}
 
 	for _, universe := range universes {
-		screen.show(universe)
+		screen.Show(universe)
 	}
 }
