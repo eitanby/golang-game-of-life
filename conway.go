@@ -66,10 +66,10 @@ func (universe Universe) GetUniverseAsText(lifeIcon, deathIcon string) string {
 
 func (universe Universe) Seed(seed int64, lifeProbability int) Universe {
 	universeSeeded := universe.clone()
-	rand.Seed(seed)
+	randomGen := rand.New(rand.NewSource(seed))
 	for row := range universeSeeded {
 		for cell := range universeSeeded[row] {
-			random := rand.Intn(100)
+			random := randomGen.Intn(100)
 			if random <= lifeProbability {
 				universeSeeded[row][cell] = true
 			} else {
