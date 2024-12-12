@@ -1,3 +1,3 @@
 module github.com/eitanby/golang-game-of-life
 
-go 1.19
+go 1.23
