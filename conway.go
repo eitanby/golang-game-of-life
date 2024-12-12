@@ -66,10 +66,10 @@ func (universe Universe) GetUniverseAsText(lifeIcon, deathIcon string) string {
 
 func (universe Universe) Seed(seed int64, lifeProbability int) Universe {
 	universeSeeded := universe.clone()
-	rand.Seed(seed)
+	randomGen := rand.New(rand.NewSource(seed))
 	for row := range universeSeeded {
 		for cell := range universeSeeded[row] {
-			random := rand.Intn(100)
+			random := randomGen.Intn(100)
 			if random <= lifeProbability {
 				universeSeeded[row][cell] = true
 			} else {
@@ -97,7 +97,7 @@ func (universe Universe) Next() Universe {
 
 		x = adjust(x, len(universe[0]))
 		y = adjust(y, len(universe))
-		return universe[y][x] == true
+		return universe[y][x]
 	}
 
 	countNeighbors := func(universe Universe, x, y int) int {
@@ -122,7 +122,7 @@ func (universe Universe) Next() Universe {
 		if isAlive && (neighbors == 2 || neighbors == 3) {
 			return true
 		}
-		if isAlive == false && neighbors == 3 {
+		if !isAlive && neighbors == 3 {
 			return true
 		}
 		return false
