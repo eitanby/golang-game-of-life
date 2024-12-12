@@ -97,7 +97,7 @@ func (universe Universe) Next() Universe {
 
 		x = adjust(x, len(universe[0]))
 		y = adjust(y, len(universe))
-		return universe[y][x] == true
+		return universe[y][x]
 	}
 
 	countNeighbors := func(universe Universe, x, y int) int {
@@ -122,7 +122,7 @@ func (universe Universe) Next() Universe {
 		if isAlive && (neighbors == 2 || neighbors == 3) {
 			return true
 		}
-		if isAlive == false && neighbors == 3 {
+		if !isAlive && neighbors == 3 {
 			return true
 		}
 		return false
