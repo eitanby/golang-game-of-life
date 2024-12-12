@@ -28,7 +28,6 @@ jobs:
         with:
           version: "2023.1.2"
           install-go: false
-          working-directory: dcrt
       - name: Install dependencies
         run: go get ./...
       - name: Build
